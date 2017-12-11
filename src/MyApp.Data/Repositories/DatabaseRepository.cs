@@ -6,6 +6,14 @@ namespace MyApp.Data.Repositories
     {
         protected readonly IDbConnection _db;
 
-        protected DatabaseRepository(IDbConnection db) => _db = db;
+        protected DatabaseRepository(IDbConnection db)
+        {
+            _db = db;
+
+            if(_db.State != ConnectionState.Open)
+            {
+                _db.Open();
+            }
+        }
     }
 }

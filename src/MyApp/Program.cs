@@ -7,6 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MyApp.Data;
 
 namespace MyApp
 {
@@ -14,6 +15,9 @@ namespace MyApp
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("Ensuring Database is Migrated");
+            new DatabaseMigrator(DependencyConfig.ConnectionString).Migrate();
+
             BuildWebHost(args).Run();
         }
 

@@ -100,19 +100,17 @@ namespace MyApp.Data.Repositories
                 
                 if (model.Toppings.Count > 0)
                 {
-                    var newToppings = (await _db.QueryAsync<Guid>(@"
-                            SELECT i.id
-                            FROM
-                              unnest('{{=ids}}'::uuid[]) as i(id)
-                            LEFT JOIN toppings t
-                              ON i.id = t.id
-                            WHERE t.id is NULL
-                        ",
-                        new {ids = string.Join(",", model.Toppings.Select(t => t.Id.ToString()))}
+                    var toppingsToAdd = model.Toppings.Select(t => t.Id).ToList();
+
+                    var existingToppings = (await _db.QueryAsync<Guid>(
+                        "SELECT id FROM toppings WHERE id = ANY (@ids)",
+                        new {ids = model.Toppings.Select(t => t.Id).ToList()}
                     )).ToList();
 
-                    await _toppings.AddMany(model.Toppings.Where(t => newToppings.Contains(t.Id)));
-                    foreach (var topping in model.Toppings.Where(t => !newToppings.Contains(t.Id)))
+                    toppingsToAdd.RemoveAll(t => existingToppings.Contains(t));
+
+                    await _toppings.AddMany(model.Toppings.Where(t => toppingsToAdd.Contains(t.Id)));
+                    foreach (var topping in model.Toppings.Where(t => !toppingsToAdd.Contains(t.Id)))
                     {
                         await _toppings.Edit(topping);
                     }

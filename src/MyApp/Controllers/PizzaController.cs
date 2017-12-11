@@ -23,7 +23,7 @@ namespace MyApp.Controllers
         public async Task<Pizza> Get(Guid id) => await _pizzas.Get(id);
 
         [HttpPut("{id}")]
-        public async Task Edit(Guid id, Pizza p)
+        public async Task Edit(Guid id, [FromBody] Pizza p)
         {
             if (!ModelState.IsValid)
             {
