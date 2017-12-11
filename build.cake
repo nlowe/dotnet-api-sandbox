@@ -1,3 +1,4 @@
+#addin "nuget:?package=Cake.Docker&version=0.8.2"
 #l "./build/AddMigration.cake"
 
 //////////////////////////////////////////////////////////////////////
@@ -20,12 +21,25 @@ var buildDir = Directory("./src/Example/bin") + Directory(configuration);
 // TASKS
 //////////////////////////////////////////////////////////////////////
 
+Task("Clean::Dist")
+    .Does(() => 
+{
+    if(DirectoryExists("./_dist"))
+    {
+        DeleteDirectory("./_dist", new DeleteDirectorySettings
+        {
+            Recursive = true
+        });
+    }
+});
+
 Task("Clean::Test")
     .Does(() => 
 {
     if(DirectoryExists("_tests"))
     {
-        DeleteDirectory("_tests", new DeleteDirectorySettings {
+        DeleteDirectory("_tests", new DeleteDirectorySettings
+        {
             Recursive = true
         });
     }
@@ -97,6 +111,28 @@ Task("Test::Integration")
 Task("Test")
     .IsDependentOn("Test::Unit")
     .IsDependentOn("Test::Integration");
+
+Task("Dist")
+    .IsDependentOn("Clean::Dist")
+    .IsDependentOn("Test")
+    .Does(() => 
+{
+    DotNetCorePublish("./src/MyApp/MyApp.csproj", new DotNetCorePublishSettings
+    {
+        Configuration = configuration,
+        OutputDirectory = MakeAbsolute(Directory("./_dist")).FullPath
+    });
+});
+
+Task("Docker")
+    .IsDependentOn("Dist")
+    .Does(() =>
+{
+    DockerBuild(new DockerImageBuildSettings
+    {
+        Tag = new []{"nlowe/myapp:test"}
+    }, ".");
+});
 
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
