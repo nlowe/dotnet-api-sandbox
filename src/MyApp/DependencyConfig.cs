@@ -4,6 +4,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 using MyApp.Data.Repositories;
+using MyApp.Filters;
 using MyApp.Types.Models;
 using MyApp.Types.Repositories;
 using MyApp.Validation;
@@ -22,7 +23,10 @@ namespace MyApp
         public static void AddMyAppServices(this IServiceCollection services) => services
             .AddValidators()
             .AddRepositories()
-            .AddMvc().AddFluentValidation();
+            .AddMvc(options =>
+            {
+                options.Filters.Add(new ApiModelValidationFilter());
+            }).AddFluentValidation();
 
         private static IServiceCollection AddValidators(this IServiceCollection services) => services
             .AddTransient<IValidator<Pizza>, PizzaValidator>()

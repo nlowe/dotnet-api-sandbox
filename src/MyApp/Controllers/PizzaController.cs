@@ -27,11 +27,6 @@ namespace MyApp.Controllers
         [HttpPost("")]
         public async Task Add([FromBody] Pizza p)
         {
-            if (!ModelState.IsValid)
-            {
-                throw new BadModelException(ModelState);
-            }
-
             try
             {
                 await _pizzas.Add(p);
@@ -50,11 +45,6 @@ namespace MyApp.Controllers
         [HttpPut("{id}")]
         public async Task Edit(Guid id, [FromBody] Pizza p)
         {
-            if (!ModelState.IsValid)
-            {
-                throw new BadModelException(ModelState);
-            }
-
             if (id != p.Id)
             {
                 throw new ArgumentException($"Tried to edit {id} but got a model for {p.Id}", nameof(id));

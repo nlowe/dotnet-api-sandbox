@@ -26,12 +26,7 @@ namespace MyApp.Controllers
         
         [HttpPost("")]
         public async Task Add([FromBody] Topping t)
-        {
-            if (!ModelState.IsValid)
-            {
-                throw new BadModelException(ModelState);
-            }
-            
+        {   
             try
             {
                 await _toppings.Add(t);
@@ -50,11 +45,6 @@ namespace MyApp.Controllers
         [HttpPut("{id}")]
         public async Task Edit(Guid id, [FromBody] Topping t)
         {
-            if (!ModelState.IsValid)
-            {
-                throw new BadModelException(ModelState);
-            }
-            
             if (id != t.Id)
             {
                 throw new ArgumentException($"Tried to edit {id} but got a model for {t.Id}", nameof(id));
