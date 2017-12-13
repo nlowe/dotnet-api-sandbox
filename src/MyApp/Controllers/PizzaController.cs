@@ -64,14 +64,6 @@ namespace MyApp.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
-        {
-            if (!ModelState.IsValid)
-            {
-                throw new BadModelException(ModelState);
-            }
-
-            await _pizzas.Delete(id);
-        }
+        public async Task Delete(Guid id) => await _pizzas.Delete(id);
     }
 }
