@@ -5,9 +5,8 @@ namespace MyApp.Exceptions
 {
     public class BadModelException : ArgumentException
     {
-        public BadModelException(ModelStateDictionary state)
-        {
-            
-        }
+        public readonly ModelStateDictionary ModelState;
+
+        public BadModelException(ModelStateDictionary state) => ModelState = state;
     }
 }

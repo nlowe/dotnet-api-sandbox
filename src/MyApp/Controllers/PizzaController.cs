@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Exceptions;
 using MyApp.Types.Models;
 using MyApp.Types.Repositories;
+using Npgsql;
 
 namespace MyApp.Controllers
 {
@@ -22,6 +24,29 @@ namespace MyApp.Controllers
         [HttpGet("{id}")]
         public async Task<Pizza> Get(Guid id) => await _pizzas.Get(id);
 
+        [HttpPost("")]
+        public async Task Add([FromBody] Pizza p)
+        {
+            if (!ModelState.IsValid)
+            {
+                throw new BadModelException(ModelState);
+            }
+
+            try
+            {
+                await _pizzas.Add(p);
+            }
+            catch (PostgresException e)
+            {
+                if (e.SqlState == "23505")
+                {
+                    throw new ApiException(HttpStatusCode.Conflict, $"The pizza identified by {p.Id} already exists");
+                }
+
+                throw;
+            }
+        }
+        
         [HttpPut("{id}")]
         public async Task Edit(Guid id, [FromBody] Pizza p)
         {
