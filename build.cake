@@ -94,6 +94,20 @@ Task("Test::Integration")
 {
     EnsureDirectoryExists("_tests");
 
+    var container = Guid.Empty;
+    if(HasArgument("UseDocker"))
+    {
+        DockerRun(new DockerContainerRunSettings
+        {
+            Name = (container = Guid.NewGuid()).ToString(),
+            Detach = true,
+            Publish = new [] {"5432:5432"},
+            Rm = true
+        }, "postgres:9.6-alpine", null, null);
+        Information("Waiting 10 seconds to allow postgres to start...");
+        System.Threading.Thread.Sleep(10000);
+    }
+
     var settings = new DotNetCoreTestSettings
     {
         ArgumentCustomization = args => args.AppendSwitch("--results-directory", MakeAbsolute(Directory("_tests")).FullPath),
@@ -102,9 +116,19 @@ Task("Test::Integration")
         Logger = "trx;LogFileName=IntegrationTestResults.trx",
     };
 
-    foreach(var project in GetFiles("./test/integration/**/*.csproj"))
+    try
     {
-        DotNetCoreTest(project.FullPath, settings);
+        foreach(var project in GetFiles("./test/integration/**/*.csproj"))
+        {
+            DotNetCoreTest(project.FullPath, settings);
+        }
+    }
+    finally
+    {
+        if(container != Guid.Empty)
+        {
+            DockerStop(container.ToString());
+        }
     }
 });
 
