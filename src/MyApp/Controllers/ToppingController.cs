@@ -30,6 +30,7 @@ namespace MyApp.Controllers
             try
             {
                 await _toppings.Add(t);
+                Response.StatusCode = (int) HttpStatusCode.Created;
             }
             catch (PostgresException e)
             {
@@ -47,7 +48,7 @@ namespace MyApp.Controllers
         {
             if (id != t.Id)
             {
-                throw new ArgumentException($"Tried to edit {id} but got a model for {t.Id}", nameof(id));
+                throw new ApiException(HttpStatusCode.BadRequest, $"Tried to edit {id} but got a model for {t.Id}");
             }
 
             await _toppings.Edit(t);

@@ -30,6 +30,7 @@ namespace MyApp.Controllers
             try
             {
                 await _pizzas.Add(p);
+                Response.StatusCode = (int) HttpStatusCode.Created;
             }
             catch (PostgresException e)
             {
@@ -47,7 +48,7 @@ namespace MyApp.Controllers
         {
             if (id != p.Id)
             {
-                throw new ArgumentException($"Tried to edit {id} but got a model for {p.Id}", nameof(id));
+                throw new ApiException(HttpStatusCode.BadRequest, $"Tried to edit {id} but got a model for {p.Id}");
             }
 
             await _pizzas.Edit(p);

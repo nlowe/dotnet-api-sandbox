@@ -3,6 +3,7 @@ using System.Data;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MyApp.Data.Repositories;
 using MyApp.Filters;
 using MyApp.Types.Models;
@@ -28,13 +29,21 @@ namespace MyApp
                 options.Filters.Add(new ApiModelValidationFilter());
             }).AddFluentValidation();
 
-        private static IServiceCollection AddValidators(this IServiceCollection services) => services
-            .AddTransient<IValidator<Pizza>, PizzaValidator>()
-            .AddTransient<IValidator<Topping>, ToppingValidator>();
+        private static IServiceCollection AddValidators(this IServiceCollection services)
+        {
+            services.TryAddTransient<IValidator<Pizza>, PizzaValidator>();
+            services.TryAddTransient<IValidator<Topping>, ToppingValidator>();
 
-        private static IServiceCollection AddRepositories(this IServiceCollection services) => services
-            .AddScoped<IDbConnection>((s) => new NpgsqlConnection(ConnectionString))
-            .AddScoped<IPizzaRepository, PizzaRepository>()
-            .AddScoped<IToppingRepository, ToppingRepository>();
+            return services;
+        }
+
+        private static IServiceCollection AddRepositories(this IServiceCollection services)
+        {
+            services.TryAddScoped<IDbConnection>((s) => new NpgsqlConnection(ConnectionString));
+            services.TryAddScoped<IPizzaRepository, PizzaRepository>();
+            services.TryAddScoped<IToppingRepository, ToppingRepository>();
+            
+            return services;
+        }
     }
 }
