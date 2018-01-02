@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using MyApp.Data;
+using Serilog;
+using Serilog.Events;
 
 namespace MyApp
 {
@@ -15,15 +11,36 @@ namespace MyApp
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Ensuring Database is Migrated");
-            new DatabaseMigrator(DependencyConfig.ConnectionString).Migrate();
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("System", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
 
-            BuildWebHost(args).Run();
+            try
+            {
+                Log.Information("Ensuring Database is Migrated");
+                new DatabaseMigrator(DependencyConfig.ConnectionString).Migrate();
+
+                Log.Information("Starting Web Host");
+                BuildWebHost(args).Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Host terminated unexpectedly");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
+        private static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .UseSerilog()
                 .Build();
     }
 }

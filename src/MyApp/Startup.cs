@@ -32,6 +32,7 @@ namespace MyApp
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<SerilogHttpMiddleware>();
             app.AddCustomErrorHandlers();
             app.UseMvc();
         }
